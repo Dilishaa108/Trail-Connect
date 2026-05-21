@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "..",
+    "paths": {
+      "@workspace/db": ["lib/db/src/index.ts"],
+      "@workspace/api-zod": ["lib/api-zod/src/generated/index.ts"]
+    }
+  },
+  "include": [
+    "*.ts",
+    "../artifacts/api-server/src/**/*.ts",
+    "../lib/db/src/**/*.ts",
+    "../lib/api-zod/src/**/*.ts"
+  ]
+}

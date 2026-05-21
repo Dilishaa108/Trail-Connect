@@ -1,0 +1,982 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Trail Connect API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: destinations
+    description: Trek destinations
+  - name: treks
+    description: Trek bookings and logs
+  - name: guides
+    description: Guide management
+  - name: users
+    description: User management
+  - name: analytics
+    description: Analytics and dashboard summaries
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /destinations:
+    get:
+      operationId: listDestinations
+      tags: [destinations]
+      summary: List all trek destinations
+      parameters:
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+        - name: duration
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Destination"
+    post:
+      operationId: createDestination
+      tags: [destinations]
+      summary: Create a new destination (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+
+  /destinations/{id}:
+    get:
+      operationId: getDestination
+      tags: [destinations]
+      summary: Get a single destination with full details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Destination detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDestination
+      tags: [destinations]
+      summary: Update a destination (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+      responses:
+        "200":
+          description: Updated destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+    delete:
+      operationId: deleteDestination
+      tags: [destinations]
+      summary: Delete a destination (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /treks:
+    get:
+      operationId: listTreks
+      tags: [treks]
+      summary: List trek bookings (user sees their own, admin sees all)
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of treks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trek"
+    post:
+      operationId: createTrek
+      tags: [treks]
+      summary: Book or log a trek
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrekInput"
+      responses:
+        "201":
+          description: Created trek booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trek"
+
+  /treks/{id}:
+    get:
+      operationId: getTrek
+      tags: [treks]
+      summary: Get a single trek booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trek detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trek"
+    patch:
+      operationId: updateTrek
+      tags: [treks]
+      summary: Update a trek booking (status, notes)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrekUpdate"
+      responses:
+        "200":
+          description: Updated trek
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trek"
+    delete:
+      operationId: deleteTrek
+      tags: [treks]
+      summary: Cancel/delete a trek booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /guides:
+    get:
+      operationId: listGuides
+      tags: [guides]
+      summary: List all guides
+      parameters:
+        - name: available
+          in: query
+          schema:
+            type: boolean
+        - name: destinationId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of guides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guide"
+    post:
+      operationId: createGuide
+      tags: [guides]
+      summary: Add a new guide (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuideInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guide"
+
+  /guides/{id}:
+    patch:
+      operationId: updateGuide
+      tags: [guides]
+      summary: Update guide details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuideUpdate"
+      responses:
+        "200":
+          description: Updated guide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guide"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all registered users (admin)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/login:
+    post:
+      operationId: loginUser
+      tags: [users]
+      summary: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Invalid credentials
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /wishlists:
+    get:
+      operationId: listWishlist
+      tags: [users]
+      summary: Get a user's wishlist
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Wishlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WishlistItem"
+    post:
+      operationId: addToWishlist
+      tags: [users]
+      summary: Add a destination to wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WishlistInput"
+      responses:
+        "201":
+          description: Created wishlist item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistItem"
+
+  /wishlists/{id}:
+    delete:
+      operationId: removeFromWishlist
+      tags: [users]
+      summary: Remove an item from wishlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  /destinations/{destinationId}/reviews:
+    get:
+      operationId: listReviews
+      tags: [destinations]
+      summary: List reviews for a destination
+      parameters:
+        - name: destinationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [destinations]
+      summary: Post a review for a destination
+      parameters:
+        - name: destinationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /analytics/summary:
+    get:
+      operationId: getAnalyticsSummary
+      tags: [analytics]
+      summary: Get platform summary stats (admin dashboard)
+      responses:
+        "200":
+          description: Platform analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+
+  /analytics/popular-routes:
+    get:
+      operationId: getPopularRoutes
+      tags: [analytics]
+      summary: Top trekked routes by booking count
+      responses:
+        "200":
+          description: Popular routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PopularRoute"
+
+  /analytics/monthly-bookings:
+    get:
+      operationId: getMonthlyBookings
+      tags: [analytics]
+      summary: Monthly booking trends for the last 12 months
+      responses:
+        "200":
+          description: Monthly bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyBooking"
+
+  /analytics/difficulty-breakdown:
+    get:
+      operationId: getDifficultyBreakdown
+      tags: [analytics]
+      summary: Trek count by difficulty level
+      responses:
+        "200":
+          description: Difficulty breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DifficultyBreakdown"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Destination:
+      type: object
+      required: [id, name, duration, difficulty, maxAltitude, distance, route, region, seatsTotal, seatsLeft, bookingStatus, lat, lng]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        duration:
+          type: string
+        difficulty:
+          type: integer
+          description: "Difficulty score 0-100"
+        maxAltitude:
+          type: string
+        distance:
+          type: string
+        route:
+          type: string
+        region:
+          type: string
+        seatsTotal:
+          type: integer
+        seatsLeft:
+          type: integer
+        bookingStatus:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        imageUrl:
+          type: ["string", "null"]
+        hotelName:
+          type: ["string", "null"]
+        hotelPhone:
+          type: ["string", "null"]
+        hospitalName:
+          type: ["string", "null"]
+        emergencyPhone:
+          type: ["string", "null"]
+        itinerary:
+          type: array
+          items:
+            type: string
+        elevationPoints:
+          type: array
+          items:
+            type: integer
+        createdAt:
+          type: string
+
+    DestinationInput:
+      type: object
+      required: [name, duration, difficulty, maxAltitude, distance, route, region, seatsTotal, lat, lng]
+      properties:
+        name:
+          type: string
+        duration:
+          type: string
+        difficulty:
+          type: integer
+        maxAltitude:
+          type: string
+        distance:
+          type: string
+        route:
+          type: string
+        region:
+          type: string
+        seatsTotal:
+          type: integer
+        lat:
+          type: number
+        lng:
+          type: number
+        imageUrl:
+          type: string
+        hotelName:
+          type: string
+        hotelPhone:
+          type: string
+        hospitalName:
+          type: string
+        emergencyPhone:
+          type: string
+        itinerary:
+          type: array
+          items:
+            type: string
+        elevationPoints:
+          type: array
+          items:
+            type: integer
+
+    DestinationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        duration:
+          type: string
+        difficulty:
+          type: integer
+        maxAltitude:
+          type: string
+        distance:
+          type: string
+        route:
+          type: string
+        region:
+          type: string
+        seatsTotal:
+          type: integer
+        seatsLeft:
+          type: integer
+        bookingStatus:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        imageUrl:
+          type: string
+        hotelName:
+          type: string
+        hotelPhone:
+          type: string
+        hospitalName:
+          type: string
+        emergencyPhone:
+          type: string
+        itinerary:
+          type: array
+          items:
+            type: string
+        elevationPoints:
+          type: array
+          items:
+            type: integer
+
+    Trek:
+      type: object
+      required: [id, userId, destinationId, status, startDate, groupSize, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        destinationId:
+          type: integer
+        destinationName:
+          type: ["string", "null"]
+        status:
+          type: string
+          description: "planned | active | completed | cancelled"
+        startDate:
+          type: string
+        endDate:
+          type: ["string", "null"]
+        groupSize:
+          type: integer
+        guideId:
+          type: ["integer", "null"]
+        guideName:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        completionRating:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    TrekInput:
+      type: object
+      required: [userId, destinationId, startDate, groupSize]
+      properties:
+        userId:
+          type: integer
+        destinationId:
+          type: integer
+        startDate:
+          type: string
+        groupSize:
+          type: integer
+        guideId:
+          type: ["integer", "null"]
+        notes:
+          type: string
+
+    TrekUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        endDate:
+          type: string
+        guideId:
+          type: ["integer", "null"]
+        notes:
+          type: string
+        completionRating:
+          type: integer
+
+    Guide:
+      type: object
+      required: [id, name, experience, languages, rating, license, available]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: ["string", "null"]
+        experience:
+          type: string
+        languages:
+          type: string
+        rating:
+          type: number
+        license:
+          type: string
+        available:
+          type: boolean
+        destinationId:
+          type: ["integer", "null"]
+        totalTreks:
+          type: integer
+        createdAt:
+          type: string
+
+    GuideInput:
+      type: object
+      required: [name, experience, languages, rating, license]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        experience:
+          type: string
+        languages:
+          type: string
+        rating:
+          type: number
+        license:
+          type: string
+        available:
+          type: boolean
+        destinationId:
+          type: ["integer", "null"]
+
+    GuideUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        experience:
+          type: string
+        languages:
+          type: string
+        rating:
+          type: number
+        license:
+          type: string
+        available:
+          type: boolean
+        destinationId:
+          type: ["integer", "null"]
+
+    User:
+      type: object
+      required: [id, username, role, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        role:
+          type: string
+          description: "user | admin"
+        totalTreks:
+          type: integer
+        completedTreks:
+          type: integer
+        createdAt:
+          type: string
+
+    UserInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AnalyticsSummary:
+      type: object
+      required: [totalUsers, totalTreks, activeBookings, totalDestinations, completedTreks, totalGuides]
+      properties:
+        totalUsers:
+          type: integer
+        totalTreks:
+          type: integer
+        activeBookings:
+          type: integer
+        totalDestinations:
+          type: integer
+        completedTreks:
+          type: integer
+        totalGuides:
+          type: integer
+
+    PopularRoute:
+      type: object
+      required: [destinationId, destinationName, bookingCount, difficulty]
+      properties:
+        destinationId:
+          type: integer
+        destinationName:
+          type: string
+        bookingCount:
+          type: integer
+        difficulty:
+          type: integer
+
+    MonthlyBooking:
+      type: object
+      required: [month, count]
+      properties:
+        month:
+          type: string
+        count:
+          type: integer
+
+    DifficultyBreakdown:
+      type: object
+      required: [level, count]
+      properties:
+        level:
+          type: string
+        count:
+          type: integer
+
+    WishlistItem:
+      type: object
+      required: [id, userId, destinationId, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        destinationId:
+          type: integer
+        createdAt:
+          type: string
+        destination:
+          $ref: "#/components/schemas/Destination"
+
+    WishlistInput:
+      type: object
+      required: [userId, destinationId]
+      properties:
+        userId:
+          type: integer
+        destinationId:
+          type: integer
+
+    Review:
+      type: object
+      required: [id, userId, destinationId, rating, comment, username, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        destinationId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        username:
+          type: string
+        createdAt:
+          type: string
+
+    ReviewInput:
+      type: object
+      required: [userId, rating, comment]
+      properties:
+        userId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
