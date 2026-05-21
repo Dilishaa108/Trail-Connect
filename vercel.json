@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "pnpm install --config.minimumReleaseAge=0",
-  "buildCommand": "pnpm -w run typecheck:libs && pnpm -w --filter @workspace/api-server run build && pnpm -w --filter @workspace/trail-connect run build",
+  "buildCommand": "pnpm run typecheck:libs && pnpm --dir artifacts/api-server run build && pnpm --dir artifacts/trail-connect run build",
   "outputDirectory": "artifacts/trail-connect/dist/public",
   "framework": null,
   "functions": {
