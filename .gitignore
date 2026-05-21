@@ -44,3 +44,4 @@ Thumbs.db
 .agents/
 trail-connect.tar.gz
 trail-connect-github.zip
+.vercel
